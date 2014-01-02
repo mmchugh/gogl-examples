@@ -1,10 +1,11 @@
 package main
 
 import (
+	"time"
+	"math"
 	gl "github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	glhelpers "github.com/mmchugh/glhelpers"
-	mathgl "github.com/Jragonmiris/mathgl"
 )
 
 func main() {
@@ -31,24 +32,27 @@ func main() {
 	program.Use()
 
 	mvp_uniform := program.GetUniformLocation("MVP")
-	projection_matrix := mathgl.Perspective(45.0, 1.0, 1.0, 500.0)
-	view_matrix := mathgl.LookAt(
+	projection_matrix := glhelpers.Perspective(45.0, 1.0, 1.0, 500.0)
+	view_matrix := glhelpers.LookAt(
 		0.0, 0.0, -5.0,
 		0.0, 0.0, 0.0,
 		0.0, 1.0, 0.0,
 	)
-	model_matrix := mathgl.Ident4f()
+	model_matrix := glhelpers.Ident4()
 	rotation := float32(0.0)
-
+	speed := float32(math.Pi)
 	position := program.GetAttribLocation("position")
 	position.EnableArray()
 	position.AttribPointer(2, gl.FLOAT, false, 0, nil)
+	last_time := time.Now()
 
 	for !window.ShouldClose() {
 		gl.Clear(gl.COLOR_BUFFER_BIT)
-		rotation += 1.0
-		model_matrix = mathgl.Ident4f().Mul4(mathgl.HomogRotate3DZ(rotation))
-		mvp := projection_matrix.Mul4(view_matrix).Mul4(model_matrix)
+		current_time := time.Now()
+		rotation += speed * float32(current_time.Sub(last_time).Seconds())
+		last_time = current_time
+		model_matrix = glhelpers.Ident4().RotateZ(rotation)
+		mvp := projection_matrix.Mult(view_matrix).Mult(model_matrix)
 		mvp_uniform.UniformMatrix4fv(false, mvp)
 
 		gl.DrawArrays(gl.TRIANGLES, 0, 3)
