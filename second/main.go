@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 	"math"
+	"unsafe"
 	gl "github.com/go-gl/gl"
 	glfw "github.com/go-gl/glfw3"
 	glhelpers "github.com/mmchugh/glhelpers"
@@ -23,10 +24,10 @@ func main() {
 
 	gl.Init()
 
-	vertices := []float32{0.0, 0.5, 0.5, -0.5, -0.5, -0.5}
+	vertices := []glhelpers.Vec2{{0.0, 0.5}, {0.5, -0.5}, {-0.5, -0.5}}
 	vertex_buffer := gl.GenBuffer()
 	vertex_buffer.Bind(gl.ARRAY_BUFFER)
-	gl.BufferData(gl.ARRAY_BUFFER, len(vertices)*4, vertices, gl.STATIC_DRAW)
+	gl.BufferData(gl.ARRAY_BUFFER, int(unsafe.Sizeof(vertices)), vertices, gl.STATIC_DRAW)
 
 	var program gl.Program = glhelpers.CreateProgramFromPaths("2d.vshader", "white.fshader")
 	program.Use()
